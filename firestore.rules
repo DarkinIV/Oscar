@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    // isGuardian helper is removed as its usage in the /users/{userId} match was problematic
+    // and we can check the user type directly where needed.
+
+    // Base rules
+    match /{document=**} {
+      allow read, write: if false; // Default deny all
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Allow users to read and write their own data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow any authenticated user to read user profiles (needed for linking and displaying info)
+      // This simplifies the rule and removes the dependency on reading own profile to check type.
+      allow read: if request.auth != null;
+    }
+
+    // Schedules collection rules
+    // Note: userId here refers to the user whose schedules are being accessed (the child's ID)
+    match /users/{userId}/schedules/{scheduleId} {
+      allow read, write: if request.auth != null && (
+        request.auth.uid == userId ||  // The user is reading their own schedule (for Child accounts)
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'guardian'  // Guardian can access any child's schedule
+      );
+    }
+
+    // Notifications collection rules - now under each user
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, write: if request.auth != null && (
+        request.auth.uid == userId ||  // The user is reading their own notifications
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'guardian'  // Guardian can access any child's notifications
+      );
+    }
+    
+    // Guardian-child link rules
+    match /guardianChildLinks/{linkId} {
+      allow read: if request.auth != null && (
+        resource == null ||
+        resource.data.guardianId == request.auth.uid ||
+        resource.data.childId == request.auth.uid
+      );
+
+      allow create: if request.auth != null 
+        && request.resource.data.guardianId == request.auth.uid
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'guardian'; // Explicit guardian check
+
+      allow update: if request.auth != null 
+        && (resource.data.childId == request.auth.uid || resource.data.guardianId == request.auth.uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+
+      allow delete: if request.auth != null 
+        && resource.data.guardianId == request.auth.uid
+        && resource.data.status == 'accepted';
+    }
+  }
+}

@@ -1,13 +1,13 @@
 //
-//  OscarUITests.swift
-//  OscarUITests
+//  Oscar_ChildMedUITests.swift
+//  Oscar-ChildMedUITests
 //
-//  Created by Asim Yilmaz on 21/08/2025.
+//  Created by Asim Yilmaz on 02/02/2025.
 //
 
 import XCTest
 
-final class OscarUITests: XCTestCase {
+final class Oscar_ChildMedUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

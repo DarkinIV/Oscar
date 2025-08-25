@@ -1,13 +1,13 @@
 //
-//  OscarUITestsLaunchTests.swift
-//  OscarUITests
+//  Oscar_ChildMedUITestsLaunchTests.swift
+//  Oscar-ChildMedUITests
 //
-//  Created by Asim Yilmaz on 21/08/2025.
+//  Created by Asim Yilmaz on 02/02/2025.
 //
 
 import XCTest
 
-final class OscarUITestsLaunchTests: XCTestCase {
+final class Oscar_ChildMedUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
